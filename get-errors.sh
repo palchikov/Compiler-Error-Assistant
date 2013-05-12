@@ -25,8 +25,9 @@ function search_so {
 
 function search_google {
    local line=$1
-   local url='http://google.com/search?q="'$line'"'
-   qlist=`wget --user-agent="Lynx (textmode" -O - $url 2>/dev/null | grep '/url?q=' |\
+   local url='http://google.com/search?q='$line
+   local site=`wget --user-agent="Lynx (textmode)" -O - "$url" 2> /dev/null`
+   local qlist=`echo $site | grep '/url?q=' |\
           sed -r 's|/url\?q=|\n&|g' | sed -nr 's|^/url\?q=([^&]*)&amp;.*$|\1|p'`
    if [ -z "$qlist" ]; then
       return
@@ -36,7 +37,7 @@ function search_google {
       if (( i >= 5 )); then
          break;
       fi
-      echo $REPLY
+      echo "$REPLY"
       let "i+=1"
    done
 }
@@ -46,7 +47,7 @@ function search_google_so {
 }
 
 while IFS= read; do
-   res=`echo $REPLY | grep -E '(error|warning)'`
+   res=`echo "$REPLY" | grep -E '(error|warning)'`
    echo "$REPLY"
    if [ -n "$res" ]; then
       line=`echo $REPLY | grep -E '(error|warning)' |\
