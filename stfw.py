@@ -89,7 +89,7 @@ if len(messages.items()) == 1:
 else:
     i = 1
     for message,m in messages.items():
-        print '{0} {1}: {2}'.format(paint(i, bcolors.HEADER), m['level'], message)
+        print paint(i, bcolors.HEADER) + ' ' + m['level'] + ': ' + message
         i = i + 1
     print "==> Enter message number" 
     print "==> --------------------"
@@ -112,12 +112,12 @@ jsondata = json.loads(zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data))
 
 # Display user menu
 print "Request: " + message['message']
-print '{0} {1}'.format(paint(0, bcolors.HEADER), 'Google for me')
+print paint(0, bcolors.HEADER) + ' Google for me'
 j = 1
 for answer in jsondata['items']:
     if j > 10:
        break
-    print '{0} {1}'.format(paint(j, bcolors.HEADER), answer['title'])
+    print paint(j, bcolors.HEADER) + ' ' + answer['title']
     j = j + 1
 print "==> Enter post number"
 print "==> --------------------"
