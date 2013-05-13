@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*-coding: utf-8 -*-
 
+from __future__ import print_function
 import sys
 import re
 import urllib2
@@ -11,38 +12,119 @@ import argparse
 import webbrowser
 import HTMLParser
 
-parser = argparse.ArgumentParser(description='StackOverflow helper.')
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_const',
-                   const=1, default=0,
-                   help='show verbose output')
-parser.add_argument('-u', '--url-open', dest='url_open', action='store_const',
-                   const=1, default=0,
-                   help='use system open command for url')
-parser.add_argument('-i', '--open-with', dest='open_with', action='store',
-                   default='',
-                   help='use custom open command for url')
-args = parser.parse_args()
-
-request_url = "https://api.stackexchange.com/2.1/search/advanced?order=desc&sort=relevance&site=stackoverflow&q="
-
+# Consts
 match_error = re.compile("^([^:]*):([^:]*):([^:]*): (warning|error|fatal error): (.*)$")
 match_tagged_message = re.compile("^(.*) (\[[^ ]*\])$")
 
+# Arguments
+parser = argparse.ArgumentParser(description='StackOverflow helper.')
+parser.add_argument('-v', '--verbose', dest='verbose_output', action='store_const',
+                   const=1, default=0,
+                   help='show verbose output')
+parser.add_argument('-s', '--system-open', dest='system_open', action='store_const',
+                   const=1, default=0,
+                   help='use system URL open command')
+parser.add_argument('-o', '--open-with', dest='open_with', action='store',
+                   default='',
+                   help='use custom URL open command')
+args = parser.parse_args()
+
 # Colors
-class bcolors:
-    HEADER = '\033[43m\033[30m\033[1m'
-    ENDC = '\033[0m'
+C_HEADER = '\033[43m\033[30m\033[1m'
+C_ERROR = '\033[31m'
+C_IMPORTANT = '\033[34m'
+C_ENDC = '\033[0m'
 
 def paint(s, color):
-    return color + str(s) + bcolors.ENDC
+    return color + str(s) + C_ENDC
+
+# StackExchange API
+request_url = "https://api.stackexchange.com/2.1/search/advanced?order=desc&sort=relevance&site=stackoverflow&q="
+url_opener = urllib2.build_opener()
+
+def load_stackoverflow(request):
+    req = request_url + (urllib2.quote(request))
+    try:
+        data = url_opener.open(req).read()
+        jsondata = json.loads(zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data))
+        return jsondata['items']
+    except IOError, e:
+        print (paint("ERROR:", C_ERROR) + " Connection failed: " + str(e))
+        return []
+
+# Browser API
+def open_url(link):
+    print (paint("Opening: ", C_IMPORTANT) + link)
+
+    if args.open_with:
+        subprocess.call((args.open_with, link))
+        sys.exit(0)
+
+    if args.system_open:
+        if sys.platform.startswith('darwin'):
+            subprocess.call(('open', link))
+        elif os.name == 'nt':
+            os.startfile(link)
+        elif os.name == 'posix':
+            subprocess.call(('xdg-open', link.replace('*','\\*')))
+        sys.exit(0)
+
+    webbrowser.open(link.decode("utf-8").replace(u'’','\'').replace(u'‘','\''), new=0)
+
+# Error menu
+def display_error_menu(messages):
+    if len(messages.items()) == 0:
+        sys.exit(0)
+    # if len(messages.items()) == 1:
+    #     return 1
+    i = 1
+    for message,m in messages.items():
+        print (paint(i, C_HEADER) + ' ' + m['level'] + ': ' + message)
+        i = i + 1
+    print ("==> Enter message number" )
+    print ("==> --------------------")
+
+    try:
+        num = int(input('==> '))
+    except:
+        sys.exit(0)
+    if num > len(messages) or num <= 0:
+        sys.exit(0)
+    print
+    return num
+
+# Display link menu
+def display_link_menu(m, answers):
+    print (paint("Request: ", C_IMPORTANT) + m['message'])
+    print (paint(0, C_HEADER) + ' Google for me')
+    j = 1
+    for answer in answers:
+        if j > 10:
+           break
+        print (paint(j, C_HEADER) + ' ' + HTMLParser.HTMLParser().unescape(answer['title']))
+        j = j + 1
+    print ("==> Enter post number")
+    print ("==> --------------------")
+
+    try:
+        num = int(input('==> '))
+    except:
+        sys.exit(0)
+    if num > len(answers) or num < 0:
+        sys.exit(0)
+
+    if num == 0:
+        return "http://google.com/search?q=" + urllib2.quote(m['message'])
+    else :
+        return answers[num-1]['link']
 
 # Parse stdin
 messages = dict()
 while 1:
     try:
         errorline = sys.stdin.readline()
-        if args.verbose:
-            print errorline,
+        if args.verbose_output:
+            print (errorline, end='')
     except KeyboardInterrupt:
         break
 
@@ -53,8 +135,8 @@ while 1:
     if data:
         try:
             codeline = sys.stdin.readline()
-            if args.verbose:
-                print codeline,
+            if args.verbose_output:
+                print (codeline, end='')
         except KeyboardInterrupt:
             break
 
@@ -77,78 +159,13 @@ while 1:
         messages[message]["filename"].append(filename)
         messages[message]["line"].append(line)
         messages[message]["row"].append(row)
-if args.verbose:
+if args.verbose_output:
     print
 
-# Display user menu
 sys.stdin = open('/dev/tty')
 
-if len(messages.items()) == 0:
-    sys.exit(0)
-if len(messages.items()) == 1:
-    num = 1
-else:
-    i = 1
-    for message,m in messages.items():
-        print paint(i, bcolors.HEADER) + ' ' + m['level'] + ': ' + message
-        i = i + 1
-    print "==> Enter message number" 
-    print "==> --------------------"
-
-    try:
-        num = int(input('==> '))
-    except:
-        sys.exit(0)
-    if num > len(messages) or num <= 0:
-        sys.exit(0)
-    print
-
+num = display_error_menu(messages)
 message = messages[messages.keys()[num-1]]
-
-# Hardwork
-opener = urllib2.build_opener()
-req = request_url + (urllib2.quote(message['message']))
-data = opener.open(req).read()
-jsondata = json.loads(zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data))
-
-# Display user menu
-print "Request: " + message['message']
-print paint(0, bcolors.HEADER) + ' Google for me'
-j = 1
-for answer in jsondata['items']:
-    if j > 10:
-       break
-    print paint(j, bcolors.HEADER) + ' ' + HTMLParser.HTMLParser().unescape(answer['title'])
-    j = j + 1
-print "==> Enter post number"
-print "==> --------------------"
-
-try:
-    num = int(input('==> '))
-except:
-    sys.exit(0)
-if num > len(jsondata['items']) or num < 0:
-    sys.exit(0)
-
-if num == 0:
-    link = "http://google.com/search?q=" + message['message']
-else :
-    link = jsondata['items'][num-1]['link']
-
-# open URL
-print "Opening " + link
-
-if args.open_with:
-    subprocess.call((args.open_with, link))
-    sys.exit(0)
-
-if args.url_open:
-    if sys.platform.startswith('darwin'):
-        subprocess.call(('open', link))
-    elif os.name == 'nt':
-        os.startfile(link)
-    elif os.name == 'posix':
-        subprocess.call(('xdg-open', link.replace('*','\\*')))
-    sys.exit(0)
-
-webbrowser.open(link.decode("utf-8").replace(u'’','\'').replace(u'‘','\''), new=0)
+answers = load_stackoverflow(message['message'])
+link = display_link_menu(message, answers)
+open_url(link)
