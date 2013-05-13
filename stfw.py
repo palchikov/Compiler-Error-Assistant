@@ -19,7 +19,7 @@ while 1:
         break
 
     match = match_error.search(errorline)
-    if (match):
+    if match:
         try:
             codeline = sys.stdin.readline()
         except KeyboardInterrupt:
@@ -39,10 +39,24 @@ while 1:
             message = data.group(5)
             tag = ""
         
-        messages.append( {'message':3, "errorline":errorline, "codeline":codeline, "filename":filename, "line":line, "row":row, "level":level, "message":message, "tag":tag} )
+        messages.append( {"errorline":errorline, "codeline":codeline, "filename":filename, "line":line, "row":row, "level":level, "message":message, "tag":tag} )
 
 # display user menu
+sys.stdin = open('/dev/tty')
+
 i = 1
 for m in messages:
     print(str(i) + ": " + m['message'])
     i = i + 1
+print("==> Enter message number")
+print("==> --------------------")
+
+try:
+    num = int(input('==> '))
+except ValueError:
+    sys.exit(0)
+if num > len(messages) or num <= 0:
+    sys.exit(0)
+
+message = messages[num-1]
+print(message['message'])
