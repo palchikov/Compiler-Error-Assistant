@@ -5,6 +5,7 @@ import re
 import urllib2
 import zlib
 import json
+import subprocess, os
 
 url = "https://api.stackexchange.com/2.1/search/advanced?order=desc&sort=relevance&site=stackoverflow&q="
 
@@ -13,7 +14,7 @@ match_tagged_message = re.compile("^(.*) (\[[^ ]*\])$")
 
 messages = []
 
-# parse stdin
+# Parse stdin
 while 1:
     try:
         errorline = sys.stdin.readline()
@@ -46,23 +47,12 @@ while 1:
         
         messages.append( {"errorline":errorline, "codeline":codeline, "filename":filename, "line":line, "row":row, "level":level, "message":message, "tag":tag} )
 
-opener = urllib2.build_opener()
-# display user menu
+# Display user menu
 sys.stdin = open('/dev/tty')
 
 i = 1
 for m in messages:
-    req = url + (urllib2.quote(m['message']))
-    data = opener.open(req).read()
-    jsondata = json.loads(zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data))
-    print(str(i) + ": " + m['message'])
-    print("Links:")
-    j = 1
-    for answer in jsondata["items"]:
-        if j > 5:
-           break
-        print(answer["link"])
-        j = j + 1
+    print('{0}: {1}: {2}'.format(i, m['level'], m['message']))
     i = i + 1
 print("==> Enter message number")
 print("==> --------------------")
@@ -73,6 +63,42 @@ except ValueError:
     sys.exit(0)
 if num > len(messages) or num <= 0:
     sys.exit(0)
+print
 
 message = messages[num-1]
-print(message['message'])
+
+# Hardwork
+opener = urllib2.build_opener()
+req = url + (urllib2.quote(message['message']))
+data = opener.open(req).read()
+jsondata = json.loads(zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data))
+
+
+# Display user menu
+print("Links: " + message['message'])
+j = 1
+for answer in jsondata['items']:
+    if j > 5:
+       break
+    print('{0}: {1}'.format(j, answer['title']))
+    j = j + 1
+print("==> Enter post number")
+print("==> --------------------")
+
+try:
+    num = int(input('==> '))
+except ValueError:
+    sys.exit(0)
+if num > len(jsondata['items']) or num <= 0:
+    sys.exit(0)
+
+answer = jsondata['items'][num-1]
+link = answer['link']
+
+print (link)
+if sys.platform.startswith('darwin'):
+    subprocess.call(('open', link))
+elif os.name == 'nt':
+    os.startfile(link)
+elif os.name == 'posix':
+    subprocess.call(('xdg-open', link))
