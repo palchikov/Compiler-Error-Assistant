@@ -9,6 +9,7 @@ import json
 import subprocess, os
 import argparse
 import webbrowser
+import HTMLParser
 
 parser = argparse.ArgumentParser(description='StackOverflow helper.')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_const',
@@ -117,7 +118,7 @@ j = 1
 for answer in jsondata['items']:
     if j > 10:
        break
-    print paint(j, bcolors.HEADER) + ' ' + answer['title']
+    print paint(j, bcolors.HEADER) + ' ' + HTMLParser.HTMLParser().unescape(answer['title'])
     j = j + 1
 print "==> Enter post number"
 print "==> --------------------"
@@ -150,4 +151,4 @@ if args.url_open:
         subprocess.call(('xdg-open', link))
     sys.exit(0)
 
-webbrowser.open(link.replace(u'’','\'').replace(u'‘','\''), new=0)
+webbrowser.open(link.decode("utf-8").replace(u'’','\'').replace(u'‘','\''), new=0)
