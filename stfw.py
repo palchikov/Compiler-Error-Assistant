@@ -1,7 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 import sys
 import re
+import urllib2
+import zlib
+import json
+
+url = "https://api.stackexchange.com/2.1/search/advanced?order=desc&sort=relevance&site=stackoverflow&q="
 
 match_error = re.compile("^([^:]*):([^:]*):([^:]*): (warning|error): (.*)$")
 match_tagged_message = re.compile("^(.*) (\[[^ ]*\])$")
@@ -39,10 +44,17 @@ while 1:
             message = data.group(5)
             tag = ""
         
-        messages.append( {'message':3, "errorline":errorline, "codeline":codeline, "filename":filename, "line":line, "row":row, "level":level, "message":message, "tag":tag} )
+        messages.append( { "errorline":errorline, "codeline":codeline, "filename":filename, "line":line, "row":row, "level":level, "message":message, "tag":tag} )
 
+opener = urllib2.build_opener()
 # display user menu
 i = 1
 for m in messages:
+    req = url + (urllib2.quote(m['message']))
+    data = opener.open(req).read()
+    jsondata = json.loads(zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data))
     print(str(i) + ": " + m['message'])
+    print("Links:")
+    for answer in jsondata["items"]:
+        print(answer["link"])
     i = i + 1
