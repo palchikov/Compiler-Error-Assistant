@@ -148,7 +148,7 @@ if args.url_open:
     elif os.name == 'nt':
         os.startfile(link)
     elif os.name == 'posix':
-        subprocess.call(('xdg-open', link))
+        subprocess.call(('xdg-open', link.replace('*','\\*')))
     sys.exit(0)
 
 webbrowser.open(link.decode("utf-8").replace(u'’','\'').replace(u'‘','\''), new=0)
