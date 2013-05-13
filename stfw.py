@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# -*-coding: utf-8 -*-
 
 import sys
 import re
@@ -28,7 +29,7 @@ def paint(s, color):
     return color + str(s) + bcolors.ENDC
 
 # Parse stdin
-messages = []
+messages = dict()
 while 1:
     try:
         errorline = sys.stdin.readline()
@@ -63,7 +64,13 @@ while 1:
             message = data.group(5)
             tag = ""
         
-        messages.append( {"errorline":errorline, "codeline":[codeline], "filename":[filename], "line":[line], "row":[row], "level":level, "message":message, "tag":tag} )
+        if message not in messages:
+           messages.update({message:{"errorline":errorline, "codeline":[], "filename":[], "line":[], "row":[], "level":level, "message":message, "tag":tag}})
+
+        messages[message]["codeline"].append(codeline)
+        messages[message]["filename"].append(filename)
+        messages[message]["line"].append(line)
+        messages[message]["row"].append(row)
 
 # Display user menu
 sys.stdin = open('/dev/tty')
@@ -71,8 +78,8 @@ sys.stdin = open('/dev/tty')
 if args.verbose:
     print
 i = 1
-for m in messages:
-    print '{0} {1}: {2}'.format(paint(i, bcolors.HEADER), m['level'], m['message'])
+for message,m in messages.items():
+    print '{0} {1}: {2}'.format(paint(i, bcolors.HEADER), m['level'], message)
     i = i + 1
 print "==> Enter message number" 
 print "==> --------------------"
@@ -85,7 +92,7 @@ if num > len(messages) or num <= 0:
     sys.exit(0)
 print
 
-message = messages[num-1]
+message = messages[messages.keys()[num-1]]
 
 # Hardwork
 opener = urllib2.build_opener()
