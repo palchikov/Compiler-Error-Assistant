@@ -6,28 +6,46 @@ import urllib2
 import zlib
 import json
 import subprocess, os
+import argparse
+
+parser = argparse.ArgumentParser(description='StackOverflow helper.')
+parser.add_argument('--verbose', dest='verbose', action='store_const',
+                   const=1, default=0,
+                   help='show verbose output')
+args = parser.parse_args()
 
 url = "https://api.stackexchange.com/2.1/search/advanced?order=desc&sort=relevance&site=stackoverflow&q="
 
-match_error = re.compile("^([^:]*):([^:]*):([^:]*): (warning|error): (.*)$")
+match_error = re.compile("^([^:]*):([^:]*):([^:]*): (warning|error|fatal error): (.*)$")
 match_tagged_message = re.compile("^(.*) (\[[^ ]*\])$")
 
-messages = []
+# Colors
+class bcolors:
+    HEADER = '\033[43m\033[30m\033[1m'
+    ENDC = '\033[0m'
+
+def paint(s, color):
+    return color + str(s) + bcolors.ENDC
 
 # Parse stdin
+messages = []
 while 1:
     try:
         errorline = sys.stdin.readline()
+        if args.verbose:
+            print errorline,
     except KeyboardInterrupt:
         break
 
     if not errorline:
         break
-
+    
     match = match_error.search(errorline)
     if match:
         try:
             codeline = sys.stdin.readline()
+            if args.verbose:
+                print codeline,
         except KeyboardInterrupt:
             break
 
@@ -45,21 +63,23 @@ while 1:
             message = data.group(5)
             tag = ""
         
-        messages.append( {"errorline":errorline, "codeline":codeline, "filename":filename, "line":line, "row":row, "level":level, "message":message, "tag":tag} )
+        messages.append( {"errorline":errorline, "codeline":[codeline], "filename":[filename], "line":[line], "row":[row], "level":level, "message":message, "tag":tag} )
 
 # Display user menu
 sys.stdin = open('/dev/tty')
 
+if args.verbose:
+    print
 i = 1
 for m in messages:
-    print('{0}: {1}: {2}'.format(i, m['level'], m['message']))
+    print '{0} {1}: {2}'.format(paint(i, bcolors.HEADER), m['level'], m['message'])
     i = i + 1
-print("==> Enter message number")
-print("==> --------------------")
+print "==> Enter message number" 
+print "==> --------------------"
 
 try:
     num = int(input('==> '))
-except ValueError:
+except:
     sys.exit(0)
 if num > len(messages) or num <= 0:
     sys.exit(0)
@@ -75,27 +95,30 @@ jsondata = json.loads(zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data))
 
 
 # Display user menu
-print("Links: " + message['message'])
+print "Links: " + message['message']
+print '{0} {1}'.format(paint(0, bcolors.HEADER), 'Google for me')
 j = 1
 for answer in jsondata['items']:
-    if j > 5:
+    if j > 10:
        break
-    print('{0}: {1}'.format(j, answer['title']))
+    print '{0} {1}'.format(paint(j, bcolors.HEADER), answer['title'])
     j = j + 1
-print("==> Enter post number")
-print("==> --------------------")
+print "==> Enter post number"
+print "==> --------------------"
 
 try:
     num = int(input('==> '))
-except ValueError:
+except:
     sys.exit(0)
-if num > len(jsondata['items']) or num <= 0:
+if num > len(jsondata['items']) or num < 0:
     sys.exit(0)
 
-answer = jsondata['items'][num-1]
-link = answer['link']
+if num == 0:
+    link = "http://google.com/search?q=" + message['message']
+else :
+    link = jsondata['items'][num-1]['link']
 
-print (link)
+print "Opening " + link
 if sys.platform.startswith('darwin'):
     subprocess.call(('open', link))
 elif os.name == 'nt':
