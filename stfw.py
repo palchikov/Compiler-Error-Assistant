@@ -11,6 +11,7 @@ import subprocess, os
 import argparse
 import webbrowser
 import HTMLParser
+from sets import Set
 
 # Consts
 match_error = re.compile("^([^:]*):([^:]*):([^:]*): (warning|error|fatal error|sorry, unimplemented): (.*)$")
@@ -57,23 +58,22 @@ def load_stackoverflow(request):
         return []
 
 # Browser API
-def open_url(link):
-    print (paint("Opening: ", C_IMPORTANT) + link)
+def open_url(links):
+    for link in links:
+        print (paint("Opening: ", C_IMPORTANT) + link)
 
-    if args.open_with:
-        subprocess.call((args.open_with, link))
-        sys.exit(0)
-
-    if args.system_open:
-        if sys.platform.startswith('darwin'):
-            subprocess.call(('open', link))
-        elif os.name == 'nt':
-            os.startfile(link)
-        elif os.name == 'posix':
-            subprocess.call(('xdg-open', link.replace('*','\\*')))
-        sys.exit(0)
-
-    webbrowser.open(link.decode("utf-8").replace(u'’','\'').replace(u'‘','\''), new=0)
+        if args.open_with:
+            subprocess.call((args.open_with, link))
+        else:
+            if args.system_open:
+                if sys.platform.startswith('darwin'):
+                    subprocess.call(('open', link))
+                elif os.name == 'nt':
+                    os.startfile(link)
+                elif os.name == 'posix':
+                    subprocess.call(('xdg-open', link.replace('*','\\*')))
+            else:
+                webbrowser.open(link.decode("utf-8").replace(u'’','\'').replace(u'‘','\''), new=0)
 
 # Error menu
 def display_error_menu(messages):
@@ -102,7 +102,7 @@ def display_error_menu(messages):
     print
     return num
 
-# Display link menu
+# Link menu
 def display_link_menu(m, answers):
     print (paint("Request: ", C_IMPORTANT) + m['message'])
     print (paint(0, C_HEADER) + ' Google for me')
@@ -112,20 +112,38 @@ def display_link_menu(m, answers):
            break
         print (paint(j, C_HEADER) + ' ' + HTMLParser.HTMLParser().unescape(answer['title']))
         j = j + 1
-    print ("==> Enter post number")
-    print ("==> --------------------")
+    print ("==> Enter post number (ex: 1 2 4-6)")
+    print ("==> -------------------------------")
 
     try:
-        num = int(input('==> '))
+        inp = str(raw_input('==> ')).split()
     except:
         sys.exit(0)
-    if num > len(answers) or num < 0:
-        sys.exit(0)
 
-    if num == 0:
-        return "http://google.com/search?q=" + urllib2.quote(m['message'])
-    else :
-        return answers[num-1]['link']
+    link_nums = Set()
+    for i in inp:
+        i = i.split('-')
+        try:
+            if len(i) == 1:
+                num = int(i[0])
+                link_nums.add(num)
+            if len(i) == 2:
+                num1 = int(i[0])
+                num2 = int(i[1])
+                for num in range(num1, num2+1):
+                    link_nums.add(num)
+        except:
+            pass
+
+    links = []
+    for num in link_nums:
+        if num == 0:
+            links.append("http://google.com/search?q=" + urllib2.quote(m['message']))
+        else:
+            if num > 0 and num <= len(answers):
+                links.append(answers[num-1]['link'])
+
+    return links
 
 # Parse stdin
 messages = dict()
