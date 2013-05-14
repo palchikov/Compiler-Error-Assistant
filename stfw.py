@@ -108,7 +108,8 @@ def display_error_menu(messages):
 # Link menu
 def display_link_menu(m, answers):
     print (paint("Request: ", C_IMPORTANT) + m['message'])
-    print (paint(0, C_HEADER) + ' Google for me')
+    googletext = '\033[34mG\033[31mo\033[33mo\033[34mg\033[32ml\033[31me\033[0m'
+    print (paint(0, C_HEADER) + ' ' + googletext + ' for me')
     j = 1
     for answer in answers:
         if j > 10:
