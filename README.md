@@ -40,10 +40,10 @@ stwf.py USAGE:
 --------------
 `stfw.py [-h] [-v] [-s] [-o OPEN_WITH]`
 
-`-h, --help` show this help message and exit
+`-h, --help` показать справку и выйти
 
-`-v, --verbose` show verbose output
+`-v, --verbose` показать полный вывод компилятора
 
-`-s, --system-open` use system URL open command
+`-s, --system-open` использовать браузер, установленный в системе по умлочанию
 
-`-o OPEN_WITH, --open-with OPEN_WITH` use custom URL open command
+`-o OPEN_WITH, --open-with OPEN_WITH` использовать указанный браузер для открытия ссылок
