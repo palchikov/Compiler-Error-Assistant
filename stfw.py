@@ -125,7 +125,8 @@ def display_link_menu(m, answers):
     for i in range(0, 5):
         if i >= len(m['codeline']): 
             break
-        print (m['filename'][i] + ':' + m['line'][i] + ':' + m['col'][i] + ' > ' + m['codeline'][i].strip())
+        print (m['filename'][i] + ':' + m['line'][i] + ':' + m['col'][i] +
+                ' > ' + m['codeline'][i].strip())
         i = i + 1
 
     googletext = '\033[34mG\033[31mo\033[33mo\033[34mg\033[32ml\033[31me\033[0m'
