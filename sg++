@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./wrapper.sh "g++ -Wall" $0 $*
