@@ -90,11 +90,14 @@ def display_error_menu(messages):
            lvlstr = paint(lvlstr, C_COMPWARN) + ': '
         print (paint(i, C_HEADER) + ' ' + lvlstr + message)
         i = i + 1
-    print ("==> Enter message number" )
+    print ("==> Enter message number or q to exit" )
     print ("==> --------------------")
 
     try:
-        num = int(input('==> '))
+        selection = raw_input('==> ')
+        if selection == 'q':
+           sys.exit(0)
+        num = int(selection)
     except:
         sys.exit(0)
     if num > len(messages) or num <= 0:
@@ -113,10 +116,17 @@ def display_link_menu(m, answers):
         print (paint(j, C_HEADER) + ' ' + HTMLParser.HTMLParser().unescape(answer['title']))
         j = j + 1
     print ("==> Enter post number (ex: 1 2 4-6)")
+    print ("q to exit or b to go to previous menu")
     print ("==> -------------------------------")
 
     try:
         inp = str(raw_input('==> ')).split()
+        if len(inp) == 0:
+           sys.exit(0)
+        if inp[0] == 'q':
+           sys.exit(0)
+        elif inp[0] == 'b':
+           return
     except:
         sys.exit(0)
 
@@ -143,7 +153,7 @@ def display_link_menu(m, answers):
             if num > 0 and num <= len(answers):
                 links.append(answers[num-1]['link'])
 
-    return links
+    open_url(links)
 
 # Parse stdin
 messages = dict()
@@ -191,8 +201,8 @@ if args.verbose_output:
 
 sys.stdin = open('/dev/tty')
 
-num = display_error_menu(messages)
-message = messages[messages.keys()[num-1]]
-answers = load_stackoverflow(message['message'])
-link = display_link_menu(message, answers)
-open_url(link)
+while True:
+   num = display_error_menu(messages)
+   message = messages[messages.keys()[num-1]]
+   answers = load_stackoverflow(message['message'])
+   display_link_menu(message, answers)
