@@ -6,7 +6,7 @@ script=$1
 shift
 
 function usage() {
-   echo "Wrapper usage: $script [stfw flags] -- [gcc flags]"
+   echo "Wrapper usage: $script [stfw flags] -- [$executable flags]"
    echo -n "Utility "
    ./stfw.py --help
 }
