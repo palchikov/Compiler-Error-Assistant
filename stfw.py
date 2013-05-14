@@ -13,7 +13,7 @@ import webbrowser
 import HTMLParser
 
 # Consts
-match_error = re.compile("^([^:]*):([^:]*):([^:]*): (warning|error|fatal error): (.*)$")
+match_error = re.compile("^([^:]*):([^:]*):([^:]*): (warning|error|fatal error|sorry, unimplemented): (.*)$")
 match_tagged_message = re.compile("^(.*) (\[[^ ]*\])$")
 
 # Arguments
