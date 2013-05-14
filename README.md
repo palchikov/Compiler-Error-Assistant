@@ -21,23 +21,29 @@ FILES:
 USAGE:
 ------
 `./sg++ -- main.cpp`
+
 Запустить компилятор g++ на файле main.cpp и перенаправить вывод stderr в stwf.py.
 
 `./sg++ -- -Wall main.cpp`
+
 Запустить компилятор g++ с указанными опциями.
 
 `./sg++ -v -- main.cpp`
+
 Передать опции основному скрипту.
 
 `g++ -Wall main.cpp 2>&1 | ./stwf.py`
+
 Перенаправить stderr компилятора в основной скрипт обычным образом.
 
 stwf.py USAGE:
 --------------
-stfw.py [-h] [-v] [-s] [-o OPEN_WITH]
+`stfw.py [-h] [-v] [-s] [-o OPEN_WITH]`
 
-  -h, --help            show this help message and exit
-  -v, --verbose         show verbose output
-  -s, --system-open     use system URL open command
-  -o OPEN_WITH, --open-with OPEN_WITH
-                        use custom URL open command
+`-h, --help` show this help message and exit
+
+`-v, --verbose` show verbose output
+
+`-s, --system-open` use system URL open command
+
+`-o OPEN_WITH, --open-with OPEN_WITH` use custom URL open command
