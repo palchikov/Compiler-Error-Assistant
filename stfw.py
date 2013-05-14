@@ -15,7 +15,7 @@ from sets import Set
 
 # Consts
 match_error = re.compile("^([^:]*):([^:]*):([^:]*): (warning|error|fatal error|sorry, unimplemented): (.*)$")
-match_tagged_message = re.compile("^(.*) (\[[^ ]*\])$")
+match_tagged_message = re.compile("^(.*) (\[[^\[\]]*\])$")
 
 # Arguments
 parser = argparse.ArgumentParser(description='StackOverflow helper.')
