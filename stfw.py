@@ -90,11 +90,14 @@ def display_error_menu(messages):
            lvlstr = paint(lvlstr, C_COMPWARN) + ': '
         print (paint(i, C_HEADER) + ' ' + lvlstr + message)
         i = i + 1
-    print ("==> Enter message number" )
+    print ("==> Enter message number or q to exit" )
     print ("==> --------------------")
 
     try:
-        num = int(input('==> '))
+        selection = raw_input('==> ')
+        if selection == 'q':
+           sys.exit(0)
+        num = int(selection)
     except:
         sys.exit(0)
     if num > len(messages) or num <= 0:
@@ -112,20 +115,27 @@ def display_link_menu(m, answers):
            break
         print (paint(j, C_HEADER) + ' ' + HTMLParser.HTMLParser().unescape(answer['title']))
         j = j + 1
-    print ("==> Enter post number")
+    print ("==> Enter post number; q to exit or b to go to previous menu")
     print ("==> --------------------")
 
     try:
-        num = int(input('==> '))
+        selection = raw_input('==> ')
+        if selection == 'q':
+           sys.exit(0)
+        elif selection == 'b':
+           return
+        num = int(selection)
     except:
         sys.exit(0)
     if num > len(answers) or num < 0:
         sys.exit(0)
 
+    link = ''
     if num == 0:
-        return "http://google.com/search?q=" + urllib2.quote(m['message'])
+        link = "http://google.com/search?q=" + urllib2.quote(m['message'])
     else :
-        return answers[num-1]['link']
+        link = answers[num-1]['link']
+    open_url(link)
 
 # Parse stdin
 messages = dict()
@@ -173,8 +183,8 @@ if args.verbose_output:
 
 sys.stdin = open('/dev/tty')
 
-num = display_error_menu(messages)
-message = messages[messages.keys()[num-1]]
-answers = load_stackoverflow(message['message'])
-link = display_link_menu(message, answers)
-open_url(link)
+while True:
+   num = display_error_menu(messages)
+   message = messages[messages.keys()[num-1]]
+   answers = load_stackoverflow(message['message'])
+   display_link_menu(message, answers)
