@@ -33,6 +33,8 @@ args = parser.parse_args()
 C_HEADER = '\033[43m\033[30m\033[1m'
 C_ERROR = '\033[31m'
 C_IMPORTANT = '\033[34m'
+C_COMPERROR = '\033[4m\033[31m'
+C_COMPWARN = '\033[4m\033[33m'
 C_ENDC = '\033[0m'
 
 def paint(s, color):
@@ -47,6 +49,8 @@ def load_stackoverflow(request):
     try:
         data = url_opener.open(req).read()
         jsondata = json.loads(zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data))
+        if jsondata['quota_remaining'] < 10:
+           print (paint('Warning:', C_IMPORTANT) + ' only ' + jsondata['quota_remaining'] + ' requests to SO left')
         return jsondata['items']
     except IOError, e:
         print (paint("ERROR:", C_ERROR) + " Connection failed: " + str(e))
@@ -79,7 +83,12 @@ def display_error_menu(messages):
     #     return 1
     i = 1
     for message,m in messages.items():
-        print (paint(i, C_HEADER) + ' ' + m['level'] + ': ' + message)
+        lvlstr = m['level']
+        if m['level'] == 'error':
+           lvlstr = paint(lvlstr, C_COMPERROR) + ':   '
+        elif m['level'] == 'warning':
+           lvlstr = paint(lvlstr, C_COMPWARN) + ': '
+        print (paint(i, C_HEADER) + ' ' + lvlstr + message)
         i = i + 1
     print ("==> Enter message number" )
     print ("==> --------------------")
