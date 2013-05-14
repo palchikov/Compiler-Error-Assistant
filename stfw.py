@@ -14,16 +14,17 @@ import HTMLParser
 from sets import Set
 
 # Consts
-match_error = re.compile("^([^:]*):([^:]*):([^:]*): (warning|error|fatal error|sorry, unimplemented): (.*)$")
+match_error = re.compile("^([^:]*):([^:]*):([^:]*): " +
+   "(warning|error|fatal error|sorry, unimplemented): (.*)$")
 match_tagged_message = re.compile("^(.*) (\[[^\[\]]*\])$")
 
 # Arguments
 parser = argparse.ArgumentParser(description='StackOverflow helper.')
-parser.add_argument('-v', '--verbose', dest='verbose_output', action='store_const',
-                   const=1, default=0,
+parser.add_argument('-v', '--verbose', dest='verbose_output',
+                   action='store_const', const=1, default=0,
                    help='show verbose output')
-parser.add_argument('-s', '--system-open', dest='system_open', action='store_const',
-                   const=1, default=0,
+parser.add_argument('-s', '--system-open', dest='system_open',
+                   action='store_const', const=1, default=0,
                    help='use system URL open command')
 parser.add_argument('-o', '--open-with', dest='open_with', action='store',
                    default='',
@@ -42,16 +43,19 @@ def paint(s, color):
     return color + str(s) + C_ENDC
 
 # StackExchange API
-request_url = "https://api.stackexchange.com/2.1/search/advanced?order=desc&sort=relevance&site=stackoverflow&q="
+request_url = "https://api.stackexchange.com/2.1/search/advanced?order=desc" +\
+              "&sort=relevance&site=stackoverflow&q="
 url_opener = urllib2.build_opener()
 
 def load_stackoverflow(request):
     req = request_url + (urllib2.quote(request))
     try:
         data = url_opener.open(req).read()
-        jsondata = json.loads(zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(data))
+        jsondata = json.loads(zlib.decompressobj(16 + zlib.MAX_WBITS).
+              decompress(data))
         if jsondata['quota_remaining'] < 10:
-           print (paint('Warning:', C_IMPORTANT) + ' only ' + jsondata['quota_remaining'] + ' requests to SO left')
+           print (paint('Warning:', C_IMPORTANT) + ' only ' +
+                 jsondata['quota_remaining'] + ' requests to SO left')
         return jsondata['items']
     except IOError, e:
         print (paint("ERROR:", C_ERROR) + " Connection failed: " + str(e))
@@ -77,7 +81,8 @@ def open_url(links):
                     elif os.name == 'posix':
                         subprocess.call(('xdg-open', link.replace('*','\\*')))
                 else:
-                        webbrowser.open(link.decode("utf-8").replace(u'’','\'').replace(u'‘','\''), new=2)
+                        webbrowser.open(link.decode("utf-8").replace(u'’','\'').
+                              replace(u'‘','\''), new=2)
 
     finally:
         os.dup2(saveerr, 2)
@@ -122,10 +127,11 @@ def display_link_menu(m, answers):
     for answer in answers:
         if j > 10:
            break
-        print (paint(j, C_HEADER) + ' ' + HTMLParser.HTMLParser().unescape(answer['title']))
+        print (paint(j, C_HEADER) + ' ' +
+              HTMLParser.HTMLParser().unescape(answer['title']))
         j = j + 1
     print ("==> Enter post number (ex: 1 2 4-6)")
-    print ("q to exit or b to go to previous menu")
+    print ("==> q to exit or b to go to previous menu")
     print ("==> -------------------------------")
 
     try:
@@ -157,7 +163,8 @@ def display_link_menu(m, answers):
     links = []
     for num in link_nums:
         if num == 0:
-            links.append("http://google.com/search?q=" + urllib2.quote(m['message']))
+            links.append("http://google.com/search?q=" +
+                  urllib2.quote(m['message']))
         else:
             if num > 0 and num <= len(answers):
                 links.append(answers[num-1]['link'])
@@ -176,7 +183,7 @@ while 1:
 
     if not errorline:
         break
-    
+
     data = match_error.search(errorline)
     if data:
         try:
@@ -194,12 +201,14 @@ while 1:
         if (data2):
             message = data2.group(1)
             tag = data2.group(2)
-        else:    
+        else:
             message = data.group(5)
             tag = ""
-        
+
         if message not in messages:
-           messages.update({message:{"codeline":[], "filename":[], "line":[], "row":[], "level":level, "message":message, "tag":tag}})
+           messages.update({message:{"codeline":[], "filename":[], "line":[],
+                                     "row":[], "level":level, "message":message,
+                                     "tag":tag}})
 
         messages[message]["codeline"].append(codeline)
         messages[message]["filename"].append(filename)
