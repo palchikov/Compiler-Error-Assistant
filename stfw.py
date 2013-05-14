@@ -121,6 +121,13 @@ def display_error_menu(messages):
 # Link menu
 def display_link_menu(m, answers):
     print (paint("Request: ", C_IMPORTANT) + m['message'])
+
+    for i in range(0, 5):
+        if i >= len(m['codeline']): 
+            break
+        print (m['filename'][i] + ':' + m['line'][i] + ':' + m['col'][i] + ' > ' + m['codeline'][i].strip())
+        i = i + 1
+
     googletext = '\033[34mG\033[31mo\033[33mo\033[34mg\033[32ml\033[31me\033[0m'
     print (paint(0, C_HEADER) + ' ' + googletext + ' for me')
     j = 1
@@ -195,7 +202,7 @@ while 1:
 
         filename = data.group(1)
         line = data.group(2)
-        row = data.group(3)
+        col = data.group(3)
         level = data.group(4)
         data2 = match_tagged_message.search(data.group(5))
         if (data2):
@@ -207,13 +214,13 @@ while 1:
 
         if message not in messages:
            messages.update({message:{"codeline":[], "filename":[], "line":[],
-                                     "row":[], "level":level, "message":message,
+                                     "col":[], "level":level, "message":message,
                                      "tag":tag}})
 
         messages[message]["codeline"].append(codeline)
         messages[message]["filename"].append(filename)
         messages[message]["line"].append(line)
-        messages[message]["row"].append(row)
+        messages[message]["col"].append(col)
 if args.verbose_output:
     print
 
