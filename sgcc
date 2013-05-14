@@ -1,0 +1,13 @@
+#!/bin/sh
+# USAGE: sgcc [stfs flags] -- [gcc flags]
+
+STFW_FLAGS=
+
+while [ $1 != '--' ]; do
+   STFW_FLAGS=$STFW_FLAGS' '$1
+   shift
+done
+
+shift
+
+gcc -Wall $* 2>&1 | ./stfw.py $STFW_FLAGS
