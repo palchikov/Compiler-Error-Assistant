@@ -73,7 +73,13 @@ def open_url(links):
                 elif os.name == 'posix':
                     subprocess.call(('xdg-open', link.replace('*','\\*')))
             else:
-                webbrowser.open(link.decode("utf-8").replace(u'’','\'').replace(u'‘','\''), new=0)
+                    saveerr = os.dup(2)
+                    os.close(2)
+                    os.open(os.devnull, os.O_RDWR)
+                    try:
+                        webbrowser.open(link.decode("utf-8").replace(u'’','\'').replace(u'‘','\''), new=2)
+                    finally:
+                        os.dup2(saveerr, 2)
 
 # Error menu
 def display_error_menu(messages):
