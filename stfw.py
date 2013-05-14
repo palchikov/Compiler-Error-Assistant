@@ -59,27 +59,29 @@ def load_stackoverflow(request):
 
 # Browser API
 def open_url(links):
-    for link in links:
-        print (paint("Opening: ", C_IMPORTANT) + link)
+    saveerr = os.dup(2)
+    os.close(2)
+    os.open(os.devnull, os.O_RDWR)
+    try:
+        for link in links:
+            print (paint("Opening: ", C_IMPORTANT) + link)
 
-        if args.open_with:
-            subprocess.call((args.open_with, link))
-        else:
-            if args.system_open:
-                if sys.platform.startswith('darwin'):
-                    subprocess.call(('open', link))
-                elif os.name == 'nt':
-                    os.startfile(link)
-                elif os.name == 'posix':
-                    subprocess.call(('xdg-open', link.replace('*','\\*')))
+            if args.open_with:
+                subprocess.call((args.open_with, link))
             else:
-                    saveerr = os.dup(2)
-                    os.close(2)
-                    os.open(os.devnull, os.O_RDWR)
-                    try:
+                if args.system_open:
+                    if sys.platform.startswith('darwin'):
+                        subprocess.call(('open', link))
+                    elif os.name == 'nt':
+                        os.startfile(link)
+                    elif os.name == 'posix':
+                        subprocess.call(('xdg-open', link.replace('*','\\*')))
+                else:
                         webbrowser.open(link.decode("utf-8").replace(u'’','\'').replace(u'‘','\''), new=2)
-                    finally:
-                        os.dup2(saveerr, 2)
+
+    finally:
+        os.dup2(saveerr, 2)
+
 
 # Error menu
 def display_error_menu(messages):
