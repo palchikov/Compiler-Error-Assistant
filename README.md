@@ -1,49 +1,49 @@
 Compiler-Error-Assistant
 ========================
-Скрипт-помощник разработчика, автоматизирующий поиск информации об ошибках компиляции на Stack Overflow и в Google.
+Developer helper script that automates searching for information about compilation errors on Stack Overflow and Google.
 
 FEATURES:
 ---------
-* Представление списка ошибок
-* Выдача ссылок на Stack Overflow по конкретной ошибке
-* Открытие ссылки прямо из консоли
-* Ссылка с поисковым запросом в Google (если не устраивают ссылки на Stack Overflow, или там ничего не найдено)
+* Presentation of the error list
+* Issuance of references to Stack Overflow for the specific error
+* Open a link directly from the console
+* Link to the search query to Google (if you are not satisfied with references to Stack Overflow, or is there nothing found)
 
 FILES:
 ------
-* stwf.py - основной скрипт, принмающий stderr компилятора.
-* wrapper.sh - вспомогательный скрипт для запуска основного скрипта из скриптов-оберток.
-* sclang - скрипт-обертка для запуска clang
-* sclang++ - скрипт-обертка для запуска clang++
-* sg++ - скрипт-обертка для запуска g++
-* sgcc - скрипт-обертка для запуска gcc
+* stwf.py - the main script, parses compiler messages.
+* wrapper.sh - helper script to run the main script from wrapper scripts.
+* sclang - wrapper script to run the clang
+* sclang++ - scriptwrapper to run clang++
+* sg++ - wrapper script to run g++
+* sgcc - wrapper script to run the gcc
 
 USAGE:
 ------
 `./sg++ -- main.cpp`
 
-Запустить компилятор g++ на файле main.cpp и перенаправить вывод stderr в stwf.py.
+Start the g++ compiler on the file main.cpp and redirect stderr output to the stwf.py.
 
 `./sg++ -- -Wall main.cpp`
 
-Запустить компилятор g++ с указанными опциями.
+Start the g++ compiler with options.
 
 `./sg++ -v -- main.cpp`
 
-Передать опции основному скрипту.
+Option to the main script.
 
 `g++ -Wall main.cpp 2>&1 | ./stwf.py`
 
-Перенаправить stderr компилятора в основной скрипт обычным образом.
+Redirect stderr to the main script compiler normally.
 
 stwf.py USAGE:
 --------------
 `stfw.py [-h] [-v] [-s] [-o OPEN_WITH]`
 
-`-h, --help` показать справку и выйти
+`-h, --help` show help and quit
 
-`-v, --verbose` показать полный вывод компилятора
+`-v, --verbose` show the full output of the compiler
 
-`-s, --system-open` использовать браузер, установленный в системе по умлочанию
+`-s, --system-open` use default browser
 
-`-o OPEN_WITH, --open-with OPEN_WITH` использовать указанный браузер для открытия ссылок
+`-o OPEN_WITH, --open-with OPEN_WITH` use external programm to open links
