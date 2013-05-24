@@ -1,13 +1,13 @@
 Compiler-Error-Assistant
 ========================
-Developer helper script that automates searching for information about compilation errors on Stack Overflow and Google.
+Helper script for automated search and retrieval information about compilation errors and messages from Stack Overflow and Google.
 
 FEATURES:
 ---------
-* Presentation of the error list
+* Display colorized  error list
 * Issuance of references to Stack Overflow for the specific error
 * Open a link directly from the console
-* Link to the search query to Google (if you are not satisfied with references to Stack Overflow, or is there nothing found)
+* Search error message in Google (if stack overflow results are not sufficient)
 
 FILES:
 ------
